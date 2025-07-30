@@ -47,4 +47,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       });
     }
   }
+  sendMessageToUser(to: string, from: string, message: string) {
+    const socket = this.users.get(to);
+    if (socket) {
+      socket.emit('message', { from, message });
+    }
+  }
+
 }
