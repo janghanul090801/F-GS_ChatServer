@@ -1,12 +1,13 @@
 import {
-  SubscribeMessage,
   WebSocketGateway,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  SubscribeMessage,
   MessageBody,
   ConnectedSocket,
 } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
+import { ChatService } from './chat.service';
 
 @WebSocketGateway({
   cors: {
@@ -14,44 +15,63 @@ import { Socket } from 'socket.io';
   },
 })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  private users: Map<string, Socket> = new Map(); // userId ↔ socket
+  private clients: Map<string, Socket> = new Map();
 
-  handleConnection(socket: Socket) {
-    const userId = socket.handshake.query.userId as string;
-    if (userId) {
-      this.users.set(userId, socket);
-      console.log(`🔌 ${userId} connected`);
+  constructor(private readonly chatService: ChatService) {}
+
+  async handleConnection(client: Socket) {
+    const userId = client.handshake.query.userId as string;
+    if (!userId) {
+      client.disconnect();
+      return;
     }
-  }
-
-  handleDisconnect(socket: Socket) {
-    const userId = socket.handshake.query.userId as string;
-    if (userId) {
-      this.users.delete(userId);
-      console.log(`❌ ${userId} disconnected`);
-    }
-  }
-
-  @SubscribeMessage('private_message')
-  handlePrivateMessage(
-    @MessageBody() data: { to: string; message: string },
-    @ConnectedSocket() senderSocket: Socket,
-  ) {
-    const senderId = senderSocket.handshake.query.userId;
-    const targetSocket = this.users.get(data.to);
-
-    if (targetSocket) {
-      targetSocket.emit('message', {
-        from: senderId,
-        message: data.message,
+    this.clients.set(userId, client);
+    await this.chatService.getUnreadMessages(userId).then(async (messages) => {
+      messages.forEach((msg) => {
+        client.emit('message', {
+          from: msg.from,
+          to: msg.to,
+          message: msg.message,
+        });
       });
+
+      await this.chatService.markMessagesAsRead(messages.map((m) => m.id));
+    });
+  }
+
+  handleDisconnect(client: Socket) {
+    const userId = [...this.clients.entries()].find(
+      ([, sock]) => sock.id === client.id,
+    )?.[0];
+    if (userId) {
+      this.clients.delete(userId);
+      console.log(`User ${userId} disconnected`);
     }
   }
+
+  @SubscribeMessage('message')
+  async handleMessage(
+    @MessageBody()
+    data: { from: string; to: string; message: string },
+    @ConnectedSocket() socket: Socket,
+  ) {
+    const { from, to, message } = data;
+    await this.chatService.saveMessage(from, to, message);
+
+    // 보내는 사람에게도 echo
+    socket.emit('message', { from, to, message });
+
+    // 받는 사람에게 메시지 전송
+    const toClient = this.clients.get(to);
+    if (toClient) {
+      toClient.emit('message', { from, to, message });
+    }
+  }
+
   sendMessageToUser(to: string, from: string, message: string) {
-    const socket = this.users.get(to);
+    const socket = this.clients.get(to);
     if (socket) {
       socket.emit('message', { from, message });
     }
   }
-
 }
