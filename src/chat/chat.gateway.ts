@@ -8,6 +8,7 @@ import {
 } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
 import { ChatService } from './chat.service';
+import { NotificationService } from '../notification/notification.service';
 
 @WebSocketGateway({
   cors: {
@@ -17,7 +18,10 @@ import { ChatService } from './chat.service';
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private clients: Map<string, Socket> = new Map();
 
-  constructor(private readonly chatService: ChatService) {}
+  constructor(
+    private readonly chatService: ChatService,
+    private readonly notifiService: NotificationService,
+  ) {}
 
   async handleConnection(client: Socket) {
     const userId = client.handshake.query.userId as string;
@@ -58,6 +62,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const { from, to, message } = data;
     await this.chatService.saveMessage(from, to, message);
 
+    const metadata = new Map<string, any>();
+    metadata.set('sender_id', from);
+    await this.notifiService.saveNotification(to, 'chat', message, metadata);
+
     // 보내는 사람에게도 echo
     socket.emit('message', { from, to, message });
 
@@ -65,13 +73,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const toClient = this.clients.get(to);
     if (toClient) {
       toClient.emit('message', { from, to, message });
-    }
-  }
-
-  sendMessageToUser(to: string, from: string, message: string) {
-    const socket = this.clients.get(to);
-    if (socket) {
-      socket.emit('message', { from, message });
     }
   }
 }

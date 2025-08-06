@@ -25,7 +25,7 @@ export class ChatService {
         { to: a.toString(), from: b.toString() },
         { to: b.toString(), from: a.toString() },
       ],
-      order: { createdAt: 'ASC' },
+      order: { createdAt: 'desc' },
     });
   }
 
