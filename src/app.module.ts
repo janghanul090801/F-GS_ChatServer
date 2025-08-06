@@ -1,12 +1,14 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ChatModule } from './chat/chat.module';
+import { ConfigModule } from '@nestjs/config';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'localhost',
+      host: 'db',
       port: 5432,
       username: 'postgres',
       password: '0801',
@@ -15,6 +17,9 @@ import { ChatModule } from './chat/chat.module';
       synchronize: true,
     }),
     ChatModule,
+
+    NotificationModule,
+    ConfigModule.forRoot(),
   ],
 })
 export class AppModule {}
