@@ -4,6 +4,7 @@ import {
   Column,
   CreateDateColumn,
 } from 'typeorm';
+import { ApiProperty } from '@nestjs/swagger';
 
 @Entity()
 export class ChatMessage {
@@ -19,9 +20,17 @@ export class ChatMessage {
   @Column()
   message: string;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamp with time zone' })
   createdAt: Date;
 
   @Column({ default: false })
   isRead: boolean;
+}
+
+export class SendMessageDto {
+  @ApiProperty({ example: '1', description: 'Receiver Id' })
+  to: string;
+
+  @ApiProperty({ example: 'Hello!', description: 'Message content' })
+  content: string;
 }

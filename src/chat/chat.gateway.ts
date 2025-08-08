@@ -39,7 +39,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         });
       });
 
-      await this.chatService.markMessagesAsRead(messages.map((m) => m.id));
+      if (messages.length > 0) {
+        await this.chatService.markMessagesAsRead(messages.map((m) => m.id));
+      }
     });
   }
 

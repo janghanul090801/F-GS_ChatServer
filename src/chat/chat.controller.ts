@@ -6,9 +6,24 @@ import {
   Patch,
   Post,
   Query,
+  Req,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { SendMessageDto } from './chat.entity';
 
+interface RequestWithUser extends Request {
+  user: {
+    userId: number;
+    email: string;
+  };
+}
+
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('messages')
 export class MessagesController {
   constructor(private readonly chatService: ChatService) {}
@@ -30,10 +45,10 @@ export class MessagesController {
   }
 
   @Post()
-  async sendMessage(
-    @Body() body: { from: string; to: string; content: string },
-  ) {
-    return this.chatService.saveMessage(body.from, body.to, body.content);
+  async sendMessage(@Req() req: RequestWithUser, @Body() body: SendMessageDto) {
+    const from = req.user.userId;
+
+    return this.chatService.saveMessage(String(from), body.to, body.content);
   }
 
   @Patch(':id/read')

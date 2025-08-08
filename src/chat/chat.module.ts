@@ -6,11 +6,11 @@ import { ChatService } from './chat.service';
 import { MessagesController } from './chat.controller';
 import { NotificationService } from '../notification/notification.service';
 import { NotificationModule } from '../notification/notification.module';
-import { Notification } from '../notification/notification.entity'
+import { NotificationNest } from '../notification/notification.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([ChatMessage, Notification]),
+    TypeOrmModule.forFeature([ChatMessage, NotificationNest]),
     NotificationModule,
   ],
   providers: [ChatGateway, ChatService, NotificationService],

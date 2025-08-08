@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { Notification } from './notification.entity';
+import { NotificationNest } from './notification.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class NotificationService {
   constructor(
-    @InjectRepository(Notification)
-    private readonly notifiRepo: Repository<Notification>,
+    @InjectRepository(NotificationNest)
+    private readonly notifiRepo: Repository<NotificationNest>,
   ) {}
 
   async saveNotification(
@@ -15,7 +15,7 @@ export class NotificationService {
     type: string,
     message: string,
     metadata: Map<string, any>,
-  ): Promise<Notification> {
+  ): Promise<NotificationNest> {
     const notif = this.notifiRepo.create({
       receiverId,
       type,
@@ -25,7 +25,7 @@ export class NotificationService {
     return this.notifiRepo.save(notif);
   }
 
-  async getNotifications(receiverId: string): Promise<Notification[]> {
+  async getNotifications(receiverId: string): Promise<NotificationNest[]> {
     return this.notifiRepo.find({
       where: {
         receiverId: receiverId,

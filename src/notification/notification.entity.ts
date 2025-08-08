@@ -1,7 +1,12 @@
-import { Column, PrimaryGeneratedColumn, Entity } from 'typeorm';
+import {
+  Column,
+  PrimaryGeneratedColumn,
+  Entity,
+  CreateDateColumn,
+} from 'typeorm';
 
 @Entity()
-export class Notification {
+export class NotificationNest {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -17,7 +22,7 @@ export class Notification {
   @Column('jsonb')
   metadata: Map<string, any>;
 
-  @Column('timestamp')
+  @CreateDateColumn({ type: 'timestamp with time zone' })
   createdAt: Date;
 
   toResponse(): any {
