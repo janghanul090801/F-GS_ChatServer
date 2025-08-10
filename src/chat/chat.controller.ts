@@ -56,4 +56,9 @@ export class MessagesController {
     await this.chatService.markMessagesAsRead([parseInt(id)]);
     return { message: `Message ${id} marked as read.` };
   }
+
+  @Get('getList')
+  async getChatList(@Req() req: RequestWithUser) {
+    return this.chatService.getChatList(String(req.user.userId));
+  }
 }

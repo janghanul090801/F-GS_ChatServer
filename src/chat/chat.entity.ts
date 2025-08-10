@@ -34,3 +34,12 @@ export class SendMessageDto {
   @ApiProperty({ example: 'Hello!', description: 'Message content' })
   content: string;
 }
+
+export class ChatListItemDto {
+  userId: string;
+  userName: string;
+  profilePath: string;
+  lastMessage: string;
+  lastMessageAt: Date;
+  unreadCount: number;
+}
