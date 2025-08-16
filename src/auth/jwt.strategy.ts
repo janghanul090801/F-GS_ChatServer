@@ -15,14 +15,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       jwtFromRequest: ExtractJwt.fromExtractors([
         (req: Request) => {
           if (req && req.cookies) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-member-access
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return req.cookies['access_token'];
           }
           return null;
         },
       ]),
       ignoreExpiration: false,
-      // 여기서 ! 를 붙여 undefined 불가능하게 보장
       secretOrKey: process.env.JWT_SECRET || config.get<string>('JWT_SECRET')!,
     });
   }

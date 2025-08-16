@@ -8,18 +8,23 @@ import {
   Query,
   Req,
   UseGuards,
-  Request,
   ParseIntPipe,
+  Request,
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 import { SendMessageDto } from './chat.entity';
 
 interface RequestWithUser extends Request {
   user: {
     userId: number;
     email: string;
+  };
+  query: {
+    page?: string;
+    limit?: string;
+    [key: string]: string | undefined;
   };
 }
 
@@ -29,16 +34,6 @@ interface RequestWithUser extends Request {
 export class MessagesController {
   constructor(private readonly chatService: ChatService) {}
 
-  @Get(':to')
-  async getMessages(
-    @Param('to') to: string,
-    @Query('page', ParseIntPipe) page = 1,
-    @Query('limit', ParseIntPipe) limit = 20,
-  ) {
-    console.log(to);
-    return this.chatService.getMessages(String(to), page, limit);
-  }
-
   @Get('unread-count')
   async getUnreadCount(@Query('to') to: string) {
     return this.chatService.getUnreadCount(to);
@@ -47,18 +42,32 @@ export class MessagesController {
   @Post()
   async sendMessage(@Req() req: RequestWithUser, @Body() body: SendMessageDto) {
     const from = req.user.userId;
-
     return this.chatService.saveMessage(String(from), body.to, body.content);
   }
 
-  @Patch(':id/read')
-  async markAsRead(@Param('id') id: string) {
-    await this.chatService.markMessagesAsRead([parseInt(id)]);
-    return { message: `Message ${id} marked as read.` };
-  }
-
-  @Get('getList')
+  @Get('list') // getList -> list로 변경
   async getChatList(@Req() req: RequestWithUser) {
     return this.chatService.getChatList(String(req.user.userId));
+  }
+
+  @Get('user/:to')
+  @ApiParam({
+    name: 'to',
+    description: 'receiver userId',
+    type: 'number',
+  })
+  async getMessages(
+    @Req() req: RequestWithUser,
+    @Param('to', ParseIntPipe) to: number,
+  ) {
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 20;
+    return this.chatService.getMessages(String(to), page, limit);
+  }
+
+  @Patch(':id/read')
+  async markAsRead(@Param('id', ParseIntPipe) id: number) {
+    await this.chatService.markMessagesAsRead([id]);
+    return { message: `Message ${id} marked as read.` };
   }
 }
