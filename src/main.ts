@@ -11,6 +11,7 @@ async function bootstrap() {
     .setDescription('F-GS ChatServer')
     .setVersion('1.0')
     .addBearerAuth()
+    .addServer('https://fg.sunrin.kr/ws')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
