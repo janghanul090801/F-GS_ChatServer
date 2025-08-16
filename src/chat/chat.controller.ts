@@ -8,7 +8,7 @@ import {
   Query,
   Req,
   UseGuards,
-  Request,
+  Request, ParseIntPipe,
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -31,12 +31,10 @@ export class MessagesController {
   @Get()
   async getMessages(
     @Query('to') to: string,
-    @Query('page') page = '1',
-    @Query('limit') limit = '20',
+    @Query('page', ParseIntPipe) page = 1,
+    @Query('limit', ParseIntPipe) limit = 20,
   ) {
-    const pageNum = parseInt(page);
-    const limitNum = parseInt(limit);
-    return this.chatService.getMessages(to, pageNum, limitNum);
+    return this.chatService.getMessages(to, page, limit);
   }
 
   @Get('unread-count')

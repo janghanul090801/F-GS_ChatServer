@@ -2,7 +2,8 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { UsersService } from '../users/users.service';
-import { ConfigService } from '@nestjs/config'; // DB 조회용 서비스
+import { ConfigService } from '@nestjs/config';
+import { Request } from 'express';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -11,10 +12,18 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private readonly config: ConfigService,
   ) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (req: Request) => {
+          if (req && req.cookies) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-member-access
+            return req.cookies['access_token'];
+          }
+          return null;
+        },
+      ]),
       ignoreExpiration: false,
-      secretOrKey:
-        process.env.JWT_SECRET || (config.get<string>('JWT_SECRET') as string),
+      // 여기서 ! 를 붙여 undefined 불가능하게 보장
+      secretOrKey: process.env.JWT_SECRET || config.get<string>('JWT_SECRET')!,
     });
   }
 
