@@ -22,7 +22,7 @@ export class NotificationNest {
   @Column('jsonb')
   metadata: Map<string, any>;
 
-  @CreateDateColumn({ type: 'timestamp with time zone' })
+  @CreateDateColumn({ type: 'timestamp with time zone', name: 'created_at' })
   createdAt: Date;
 
   toResponse(): any {

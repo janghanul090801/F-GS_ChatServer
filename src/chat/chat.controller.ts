@@ -8,7 +8,8 @@ import {
   Query,
   Req,
   UseGuards,
-  Request, ParseIntPipe,
+  Request,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -28,13 +29,14 @@ interface RequestWithUser extends Request {
 export class MessagesController {
   constructor(private readonly chatService: ChatService) {}
 
-  @Get()
+  @Get(':to')
   async getMessages(
-    @Query('to') to: string,
+    @Param('to') to: string,
     @Query('page', ParseIntPipe) page = 1,
     @Query('limit', ParseIntPipe) limit = 20,
   ) {
-    return this.chatService.getMessages(to, page, limit);
+    console.log(to);
+    return this.chatService.getMessages(String(to), page, limit);
   }
 
   @Get('unread-count')

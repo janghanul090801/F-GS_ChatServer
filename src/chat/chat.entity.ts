@@ -20,10 +20,10 @@ export class ChatMessage {
   @Column()
   message: string;
 
-  @CreateDateColumn({ type: 'timestamp with time zone' })
+  @CreateDateColumn({ type: 'timestamp with time zone', name: 'created_at' })
   createdAt: Date;
 
-  @Column({ default: false })
+  @Column({ default: false, name: 'is_read' })
   isRead: boolean;
 }
 

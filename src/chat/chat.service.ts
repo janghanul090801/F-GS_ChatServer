@@ -54,32 +54,32 @@ export class ChatService {
       SELECT
         u.id AS "userId",
         u.name AS "userName",
-        u.profile_image AS "profileImage",
-        m.content AS "lastMessage",
+        u.profile_path AS "profileImage",
+        m.message AS "lastMessage",
         m.created_at AS "lastMessageAt",
         COALESCE(unread.count, 0) AS "unreadCount"
       FROM users u
       INNER JOIN (
         SELECT DISTINCT ON (
-          CASE WHEN sender_id = $1 THEN receiver_id ELSE sender_id END
+          CASE WHEN "from" = $1 THEN "to" ELSE "from" END
         )
         id,
-        content,
+        message,
         created_at,
-        sender_id,
-        receiver_id
-        FROM messages
-        WHERE sender_id = $1 OR receiver_id = $1
+        "from",
+        "to"
+        FROM chat_message
+        WHERE "from" = $1 OR "to" = $1
         ORDER BY
-          CASE WHEN sender_id = $1 THEN receiver_id ELSE sender_id END,
+          CASE WHEN "from" = $1 THEN "to" ELSE "from" END,
           created_at DESC
-      ) m ON (m.sender_id = u.id OR m.receiver_id = u.id)
+      ) m ON (m."from" = u.id OR m."to" = u.id)
       LEFT JOIN (
-        SELECT sender_id, COUNT(*) AS count
-        FROM messages
-        WHERE receiver_id = $1 AND is_read = false
-        GROUP BY sender_id
-      ) unread ON unread.sender_id = u.id
+        SELECT "from", COUNT(*) AS count
+        FROM chat_message
+        WHERE "to" = $1 AND is_read = false
+        GROUP BY "from"
+      ) unread ON unread."from" = u.id
       WHERE u.id != $1
       ORDER BY m.created_at DESC
     `,
