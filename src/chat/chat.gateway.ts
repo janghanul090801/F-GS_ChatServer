@@ -14,6 +14,7 @@ import { NotificationService } from '../notification/notification.service';
   cors: {
     origin: '*',
   },
+  path: '/',
 })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private clients: Map<string, Socket> = new Map();

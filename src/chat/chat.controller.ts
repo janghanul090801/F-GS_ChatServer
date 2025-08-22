@@ -45,7 +45,7 @@ export class MessagesController {
     return this.chatService.saveMessage(String(from), body.to, body.content);
   }
 
-  @Get('list') // getList -> list로 변경
+  @Get('list')
   async getChatList(@Req() req: RequestWithUser) {
     return this.chatService.getChatList(String(req.user.userId));
   }
