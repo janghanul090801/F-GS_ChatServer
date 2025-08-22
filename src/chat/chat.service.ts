@@ -35,7 +35,7 @@ export class ChatService {
   async getMessages(to: string, page: number, limit: number) {
     return this.chatRepo.find({
       where: { to },
-      order: { createdAt: 'DESC' },
+      order: { createdAt: 'ASC' },
       skip: (page - 1) * limit,
       take: limit,
     });
@@ -54,7 +54,7 @@ export class ChatService {
       SELECT
         u.id AS "userId",
         u.name AS "userName",
-        u.profile_path AS "profileImage",
+        u.profile_path AS "profilePath",
         m.message AS "lastMessage",
         m.created_at AS "lastMessageAt",
         COALESCE(unread.count, 0) AS "unreadCount"

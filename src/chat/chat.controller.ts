@@ -61,7 +61,7 @@ export class MessagesController {
     @Param('to', ParseIntPipe) to: number,
   ) {
     const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 20;
+    const limit = Number(req.query.limit) || 10000;
     return this.chatService.getMessages(String(to), page, limit);
   }
 
